@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd 
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd"
+    profile="prod">
+
+	<context:component-scan base-package="ua.deliveryservice.repository" />
+	
+	<context:property-placeholder system-properties-mode="OVERRIDE" location="classpath:jdbc.properties"/>
+    
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" 
+          destroy-method="close">
+        <property name="driverClassName" value="${driver}"/>        
+        <property name="url" value="${url}"/>        
+        <property name="username" value="${user}"/>        
+        <property name="password" value="${password}"/> 
+        <property name="initialSize" value="5"/>       
+    </bean>
+    
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--        <property name="persistenceUnitName" value="HiberantePostgreSQL" />-->
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+        </property>
+        <property name="packagesToScan" value="ua.deliveryservice.domain"/>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+               <!--  <prop key="hibernate.hbm2ddl.auto">update</prop>  -->
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="transactionManager" 
+          class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+    
+    <tx:annotation-driven transaction-manager="transactionManager" />
+	
+<!-- 
+	<bean id="pizzaRepo" class="ua.deliveryservice.repository.InMemPizzaRepository"  >
+	<property name="pizzas">
+			<map>
+				<entry key="1">
+					<bean class="ua.deliveryservice.domain.Pizza">
+						<constructor-arg value="1"/>
+						<constructor-arg value="Sea"/>
+						<constructor-arg value="SEA"/>
+						<constructor-arg value="1."/>
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean id="orderRepo" class="ua.deliveryservice.repository.InMemOrderRepository" />
+	
+	 -->
+
+</beans>
